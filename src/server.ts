@@ -6,6 +6,7 @@ import * as Logs from "./plugins/logging";
 import * as Tasks from "./api/tasks";
 import * as Users from "./api/users";
 import { IDatabase } from "./database";
+const Path = require('path');
 
 export async function init(
   configs: IServerConfigurations,
@@ -48,7 +49,24 @@ export async function init(
 
     console.log("All plugins registered successfully.");
 
+    await server.register(require('inert'));
+
     console.log("Register Routes");
+
+    // define route for static content
+    server.route({
+      method: 'GET',
+      path: '/{param*}',
+      options: { auth: false },
+      handler: {
+          directory: {
+              path: ['build/public'],
+              listing: false,
+              index: ['index.html']
+          }
+      }
+  });
+
     Logs.init(server, configs, database);
     Tasks.init(server, configs, database);
     Users.init(server, configs, database);
